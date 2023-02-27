@@ -1,0 +1,120 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: eks-attached-testing-ec2-composition
+  labels:
+    crossplane.io/xrd: eksattachedtestingec2.zicong.com
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: zicong.com/v1alpha1
+    kind: EksAttachedTestingEC2
+  resources:
+  - name: ec2-sg
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: SecurityGroup
+      metadata:
+        labels:
+          access: crossplane-tester
+      spec:
+        forProvider:
+          description: "crossplane tester instnace"
+          vpcIdSelector:
+            matchControllerRef: false
+            matchLabels:
+              usage: basic-vpc
+          egress:
+          - fromPort: 0
+            toPort: 0
+            ipProtocol: "-1"
+            ipRanges:
+            - cidrIp: "0.0.0.0/0"
+          ingress:
+          - fromPort: 22
+            toPort: 22
+            ipProtocol: tcp
+            ipRanges:
+            - cidrIp: "0.0.0.0/0"
+            ipv6Ranges:
+            - cidrIPv6: "::/0"
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.groupName
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: ec2
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1alpha1
+      kind: Instance
+      spec:
+        forProvider:
+          instanceType: t3.nano
+          subnetIdSelector:
+            matchControllerRef: false
+            matchLabels:
+              access: private
+          securityGroupSelector:
+            matchControllerRef: true
+            matchLabels:
+              access: crossplane-tester
+          tags:
+          - key: Name
+            value: zicong-crossplane-1
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.imageId
+      toFieldPath: spec.forProvider.imageId
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.sshkey
+      toFieldPath: spec.forProvider.keyName
+  - name: bastion
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1alpha1
+      kind: Instance
+      spec:
+        forProvider:
+          instanceType: t3.nano
+          subnetIdSelector:
+            matchControllerRef: false
+            matchLabels:
+              access: public
+          securityGroupSelector:
+            matchControllerRef: true
+            matchLabels:
+              access: crossplane-tester
+          tags:
+          - key: Name
+            value: zicong-crossplane-1
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.imageId
+      toFieldPath: spec.forProvider.imageId
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.sshkey
+      toFieldPath: spec.forProvider.keyName
+
+
+
+
+
+
+
+

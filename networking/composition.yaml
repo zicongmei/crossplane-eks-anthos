@@ -1,0 +1,205 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: eks-attached-composition
+  labels:
+    crossplane.io/xrd: eksattached.zicong.com
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: zicong.com/v1alpha1
+    kind: EksAttached
+  resources:
+  - name: vpc
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: VPC
+      metadata:
+        labels:
+          usage: basic-vpc
+      spec:
+        forProvider:
+          region: us-east-1
+          cidrBlock: 10.0.0.0/16
+          enableDnsHostNames: true
+          enableDnsSupport: true
+          tags:
+          - key: Name
+            value: zicong-crossplane-1
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: privateSubnet
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: Subnet
+      metadata:
+        labels:
+          access: private
+      spec:
+        forProvider:
+          cidrBlock: 10.0.1.0/24
+          vpcIdSelector:
+            matchControllerRef: true
+          tags:
+          - key: Name
+            value: private-subnet
+          - key: "kubernetes.io/role/internal-elb"
+            value: "1"
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.subnetId
+      toFieldPath: status.privateSubnetId
+    - type: ToCompositeFieldPath
+      fromFieldPath: spec.forProvider.vpcId
+      toFieldPath: status.vpcId
+  - name: publicSubnet
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: Subnet
+      metadata:
+        labels:
+          access: public
+      spec:
+        forProvider:
+          cidrBlock: 10.0.2.0/24
+          mapPublicIPOnLaunch: true
+          vpcIdSelector:
+            matchControllerRef: true
+          tags:
+          - key: Name
+            value: public-subnet
+          - key: "kubernetes.io/role/elb"
+            value: "1"
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: igw
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: InternetGateway
+      spec:
+        forProvider:
+          vpcIdSelector:
+            matchControllerRef: true
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: public-rtb
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: RouteTable
+      spec:
+        forProvider:
+          associations:
+          - subnetIdSelector:
+              matchControllerRef: true
+              matchLabels:
+                access: public
+          vpcIdSelector:
+            matchControllerRef: true
+          routes:
+          - destinationCidrBlock: 0.0.0.0/0
+            gatewayIdSelector:
+              matchControllerRef: true
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: eip
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: Address
+      metadata:
+        labels:
+          usage: nat
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: nat
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: NATGateway
+      metadata:
+        labels:
+          nat: private
+      spec:
+        forProvider:
+          subnetIdSelector:
+            matchControllerRef: true
+            matchLabels:
+              access: public
+          allocationIdSelector:
+            matchControllerRef: true
+            matchLabels:
+              usage: nat
+          tags:
+          - key: ResourceType
+            value: natgateway
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: private-rtb
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: RouteTable
+      spec:
+        forProvider:
+          associations:
+          - subnetIdSelector:
+              matchControllerRef: true
+              matchLabels:
+                access: private
+          vpcIdSelector:
+            matchControllerRef: true
+          routes:
+          - destinationCidrBlock: 0.0.0.0/0
+            natGatewayIdSelector:
+              matchControllerRef: true
+              matchLabels:
+                nat: private
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+
+
+
+
+
+
+
+
+

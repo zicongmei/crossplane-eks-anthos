@@ -1,0 +1,35 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: eksattachedtestingec2.zicong.com
+spec:
+  group: zicong.com
+  names:
+    kind: EksAttachedTestingEC2
+    plural: eksattachedtestingec2
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  sshkey:
+                    type: string
+                  region:
+                    type: string
+                  imageId:
+                    type: string
+                required:
+                - sshkey
+                - region
+                - imageId
+            required:
+            - parameters

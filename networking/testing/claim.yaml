@@ -1,0 +1,9 @@
+apiVersion: zicong.com/v1alpha1
+kind: EksAttachedTestingEC2
+metadata:
+  name: zicong-attached-1
+spec:
+  parameters:
+    region: us-west-2
+    imageId: ami-0c872303f256ba058
+    sshkey: zicong-1p-dev-ssh
