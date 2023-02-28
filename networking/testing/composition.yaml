@@ -41,9 +41,6 @@ spec:
     patches:
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
       toFieldPath: spec.forProvider.groupName
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
@@ -67,9 +64,6 @@ spec:
           - key: Name
             value: zicong-crossplane-1
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region

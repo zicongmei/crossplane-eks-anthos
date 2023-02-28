@@ -7,3 +7,6 @@ spec:
     region: us-west-2
     imageId: ami-0c872303f256ba058
     sshkey: zicong-1p-dev-ssh
+  writeConnectionSecretToRef:
+    name: networking-test
+    namespace: crossplane-system

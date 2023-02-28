@@ -28,11 +28,11 @@ spec:
             value: zicong-crossplane-1
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
-    - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.vpcId
+      toFieldPath: status.vpcId
   - name: privateSubnet
     base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
@@ -52,17 +52,11 @@ spec:
             value: "1"
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
-    - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.subnetId
       toFieldPath: status.privateSubnetId
-    - type: ToCompositeFieldPath
-      fromFieldPath: spec.forProvider.vpcId
-      toFieldPath: status.vpcId
   - name: publicSubnet
     base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
@@ -83,9 +77,6 @@ spec:
             value: "1"
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
-    - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
   - name: igw
@@ -97,9 +88,6 @@ spec:
           vpcIdSelector:
             matchControllerRef: true
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
@@ -122,9 +110,6 @@ spec:
               matchControllerRef: true
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
-    - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
   - name: eip
@@ -135,9 +120,6 @@ spec:
         labels:
           usage: nat
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
@@ -163,9 +145,6 @@ spec:
             value: natgateway
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
-    - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
   - name: private-rtb
@@ -188,9 +167,6 @@ spec:
               matchLabels:
                 nat: private
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
