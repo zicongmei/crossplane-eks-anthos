@@ -40,9 +40,35 @@ spec:
       metadata:
         labels:
           access: private
+          index: "1"
       spec:
         forProvider:
           cidrBlock: 10.0.1.0/24
+          vpcIdSelector:
+            matchControllerRef: true
+          tags:
+          - key: Name
+            value: private-subnet
+          - key: "kubernetes.io/role/internal-elb"
+            value: "1"
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.subnetId
+      toFieldPath: status.privateSubnetId
+  - name: privateSubnet2
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: Subnet
+      metadata:
+        labels:
+          access: private
+          index: "2"
+      spec:
+        forProvider:
+          cidrBlock: 10.0.2.0/24
           vpcIdSelector:
             matchControllerRef: true
           tags:
@@ -64,9 +90,33 @@ spec:
       metadata:
         labels:
           access: public
+          index: "1"
       spec:
         forProvider:
-          cidrBlock: 10.0.2.0/24
+          cidrBlock: 10.0.101.0/24
+          mapPublicIPOnLaunch: true
+          vpcIdSelector:
+            matchControllerRef: true
+          tags:
+          - key: Name
+            value: public-subnet
+          - key: "kubernetes.io/role/elb"
+            value: "1"
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+  - name: publicSubnet2
+    base:
+      apiVersion: ec2.aws.crossplane.io/v1beta1
+      kind: Subnet
+      metadata:
+        labels:
+          access: public
+          index: "2"
+      spec:
+        forProvider:
+          cidrBlock: 10.0.102.0/24
           mapPublicIPOnLaunch: true
           vpcIdSelector:
             matchControllerRef: true
@@ -170,7 +220,6 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
       toFieldPath: spec.forProvider.region
-
 
 
 

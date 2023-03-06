@@ -1,0 +1,10 @@
+apiVersion: zicong.com/v1alpha1
+kind: EksCluster
+metadata:
+  name: zicong-attached-1
+spec:
+  parameters:
+    region: us-west-2
+  writeConnectionSecretToRef:
+    name: eks-cluster
+    namespace: crossplane-system
